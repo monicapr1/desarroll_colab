@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Inscripción de Alumnos</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+  <div class="dashboard-container">
+    <h2>Inscripción de Alumnos a Materias</h2>
+
+    <form id="formInscripcion">
+      <label>Alumno:</label>
+      <select id="selectAlumno" required></select>
+
+      <label>Materias:</label>
+      <div id="checkboxMaterias"></div>
+
+      <button type="submit">Inscribir</button>
+    </form>
+
+    <hr>
+
+    <h3>Inscripciones Realizadas</h3>
+    <div id="listaInscripciones"></div>
+
+    <br>
+    <button onclick="location.href='../Dashboard.html'">Volver al Menú</button>
+  </div>
+
+  <script>
+    const alumnos = JSON.parse(localStorage.getItem('alumnos')) || [];
+    const materias = JSON.parse(localStorage.getItem('materias')) || [];
+    let inscripciones = JSON.parse(localStorage.getItem('inscripciones')) || [];
+
+    const selectAlumno = document.getElementById('selectAlumno');
+    const checkboxMaterias = document.getElementById('checkboxMaterias');
+    const listaInscripciones = document.getElementById('listaInscripciones');
+    const form = document.getElementById('formInscripcion');
+
+    // Cargar alumnos al <select>
+    alumnos.forEach(a => {
+      const option = document.createElement('option');
+      option.value = a.id;
+      option.textContent = `${a.nombre} (${a.matricula})`;
+      selectAlumno.appendChild(option);
+    });
+
+    // Cargar materias como checkbox
+    materias.forEach(m => {
+      const div = document.createElement('div');
+      div.innerHTML = `
+        <label>
+          <input type="checkbox" name="materias" value="${m.id}" />
+          ${m.nombre} (${m.clave})
+        </label>
+      `;
+      checkboxMaterias.appendChild(div);
+    });
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const alumnoId = parseInt(selectAlumno.value);
+      const materiasSeleccionadas = Array.from(document.querySelectorAll('input[name="materias"]:checked')).map(input => parseInt(input.value));
+
+      if (materiasSeleccionadas.length === 0) {
+        alert("Selecciona al menos una materia.");
+        return;
+      }
+
+      inscripciones = inscripciones.filter(i => i.alumnoId !== alumnoId); 
+      inscripciones.push({ alumnoId, materias: materiasSeleccionadas });
+
+      localStorage.setItem('inscripciones', JSON.stringify(inscripciones));
+      form.reset();
+      renderInscripciones();
+    });
+
+    function renderInscripciones() {
+      listaInscripciones.innerHTML = '';
+
+      inscripciones.forEach(i => {
+        const alumno = alumnos.find(a => a.id === i.alumnoId);
+        const materiasInscritas = i.materias.map(id => {
+          const m = materias.find(m => m.id === id);
+          return m ? `${m.nombre} (${m.clave})` : 'Materia eliminada';
+        }).join(', ');
+
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <strong>${alumno.nombre} (${alumno.matricula})</strong><br>
+          Materias: ${materiasInscritas}
+        `;
+        listaInscripciones.appendChild(card);
+      });
+    }
+
+    renderInscripciones();
+  </script>
+</body>
+</html>
