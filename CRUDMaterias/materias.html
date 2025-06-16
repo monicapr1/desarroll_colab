@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CRUD Materias</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+  <div class="dashboard-container">
+    <h2>Gestión de Materias</h2>
+    <form id="formMateria">
+      <input type="hidden" id="materiaId">
+      <input type="text" id="nombreMateria" placeholder="Nombre de la Materia" required />
+      <input type="text" id="claveMateria" placeholder="Clave de la Materia" required />
+      <button type="submit">Guardar Materia</button>
+    </form>
+
+    <hr>
+
+    <h3>Lista de Materias</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Clave</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="listaMaterias"></tbody>
+    </table>
+
+    <br>
+    <button onclick="location.href='../Dashboard.html'">Volver al Menú</button>
+  </div>
+
+  <script>
+    let materias = JSON.parse(localStorage.getItem('materias')) || [];
+
+    const form = document.getElementById('formMateria');
+    const lista = document.getElementById('listaMaterias');
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const id = document.getElementById('materiaId').value;
+      const nombre = document.getElementById('nombreMateria').value;
+      const clave = document.getElementById('claveMateria').value;
+
+      if (id) {
+        materias = materias.map(m => m.id == id ? { id, nombre, clave } : m);
+      } else {
+        materias.push({
+          id: Date.now(),
+          nombre,
+          clave
+        });
+      }
+
+      localStorage.setItem('materias', JSON.stringify(materias));
+      form.reset();
+      renderMaterias();
+    });
+
+    function renderMaterias() {
+      lista.innerHTML = '';
+      materias.forEach(materia => {
+        lista.innerHTML += `
+          <tr>
+            <td>${materia.nombre}</td>
+            <td>${materia.clave}</td>
+            <td>
+              <button onclick="editarMateria(${materia.id})">✏️</button>
+              <button onclick="eliminarMateria(${materia.id})">🗑️</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function editarMateria(id) {
+      const materia = materias.find(m => m.id === id);
+      document.getElementById('materiaId').value = materia.id;
+      document.getElementById('nombreMateria').value = materia.nombre;
+      document.getElementById('claveMateria').value = materia.clave;
+    }
+
+    function eliminarMateria(id) {
+      if (confirm('¿Eliminar esta materia?')) {
+        materias = materias.filter(m => m.id !== id);
+        localStorage.setItem('materias', JSON.stringify(materias));
+        renderMaterias();
+      }
+    }
+
+    renderMaterias();
+  </script>
+</body>
+</html>
