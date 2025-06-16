@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Captura de Calificaciones</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+  <div class="dashboard-container">
+    <h2>Captura de Calificaciones</h2>
+
+    <label for="alumnoSelect">Selecciona un alumno:</label>
+    <select id="alumnoSelect">
+      <option value="">-- Selecciona --</option>
+    </select>
+
+    <form id="formCalificaciones" style="display:none; margin-top: 1rem;">
+      <div id="camposCalificaciones"></div>
+      <button type="submit">Guardar Calificaciones</button>
+    </form>
+
+    <hr>
+
+    <h3>Calificaciones Registradas</h3>
+    <div id="listaCalificaciones"></div>
+
+    <br>
+    <button onclick="location.href='../Dashboard.html'">Volver al Menú</button>
+  </div>
+
+  <script>
+    const alumnos = JSON.parse(localStorage.getItem('alumnos')) || [];
+    const materias = JSON.parse(localStorage.getItem('materias')) || [];
+    const inscripciones = JSON.parse(localStorage.getItem('inscripciones')) || [];
+    let calificaciones = JSON.parse(localStorage.getItem('calificaciones')) || [];
+
+    const alumnoSelect = document.getElementById('alumnoSelect');
+    const formCalificaciones = document.getElementById('formCalificaciones');
+    const camposCalificaciones = document.getElementById('camposCalificaciones');
+    const listaCalificaciones = document.getElementById('listaCalificaciones');
+
+    // Cargar alumnos
+    alumnos.forEach(a => {
+      const option = document.createElement('option');
+      option.value = a.id;
+      option.textContent = `${a.nombre} (${a.matricula})`;
+      alumnoSelect.appendChild(option);
+    });
+
+    alumnoSelect.addEventListener('change', () => {
+      const alumnoId = parseInt(alumnoSelect.value);
+      camposCalificaciones.innerHTML = '';
+
+      if (!alumnoId) {
+        formCalificaciones.style.display = 'none';
+        return;
+      }
+
+      const inscripcion = inscripciones.find(i => i.alumnoId === alumnoId);
+      if (!inscripcion) {
+        camposCalificaciones.innerHTML = '<p>Este alumno no está inscrito en ninguna materia.</p>';
+        formCalificaciones.style.display = 'none';
+        return;
+      }
+
+      inscripcion.materias.forEach(mId => {
+        const materia = materias.find(m => m.id === mId);
+        const nombre = materia ? materia.nombre : 'Materia eliminada';
+        const clave = materia ? materia.clave : '';
+        const valorExistente = calificaciones.find(c => c.alumnoId === alumnoId && c.materiaId === mId)?.calificacion || '';
+
+        const div = document.createElement('div');
+        div.innerHTML = `
+          <label>${nombre} (${clave})</label>
+          <input type="number" name="cal_${mId}" value="${valorExistente}" min="0" max="100" required />
+        `;
+        camposCalificaciones.appendChild(div);
+      });
+
+      formCalificaciones.style.display = 'block';
+    });
+
+    formCalificaciones.addEventListener('submit', e => {
+      e.preventDefault();
+      const alumnoId = parseInt(alumnoSelect.value);
+      const inputs = formCalificaciones.querySelectorAll('input[type="number"]');
+
+      inputs.forEach(input => {
+        const materiaId = parseInt(input.name.split('_')[1]);
+        const calificacion = parseFloat(input.value);
+
+        const index = calificaciones.findIndex(c => c.alumnoId === alumnoId && c.materiaId === materiaId);
+        if (index >= 0) {
+          calificaciones[index].calificacion = calificacion;
+        } else {
+          calificaciones.push({ alumnoId, materiaId, calificacion });
+        }
+      });
+
+      localStorage.setItem('calificaciones', JSON.stringify(calificaciones));
+      alert("✅ Calificaciones guardadas");
+      renderCalificaciones();
+      formCalificaciones.reset();
+      formCalificaciones.style.display = 'none';
+    });
+
+    function renderCalificaciones() {
+      listaCalificaciones.innerHTML = '';
+
+      alumnos.forEach(alumno => {
+        const califAlumno = calificaciones.filter(c => c.alumnoId === alumno.id);
+        if (califAlumno.length === 0) return;
+
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `<strong>${alumno.nombre} (${alumno.matricula})</strong><ul>` +
+          califAlumno.map(c => {
+            const materia = materias.find(m => m.id === c.materiaId);
+            return `<li>${materia ? materia.nombre : 'Materia eliminada'}: <strong>${c.calificacion}</strong></li>`;
+          }).join('') +
+          `</ul>`;
+        listaCalificaciones.appendChild(div);
+      });
+    }
+
+    renderCalificaciones();
+  </script>
+</body>
+</html>
