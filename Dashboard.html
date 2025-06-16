@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard - Proyecto Final</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="dashboard-container">
+    <h1>Bienvenido, Admin</h1>
+    <div class="menu">
+      <button onclick="location.href='CRUDAlumnos/alumnos.html'">CRUD Alumnos</button>
+      <button onclick="location.href='CRUDMaterias/materias.html'">CRUD Materias</button>
+      <button onclick="location.href='InscripcionMaterias/inscripcion.html'">Inscribir Alumnos</button>
+      <button onclick="location.href='CapturaCalif/calificaciones.html'">Capturar Calificaciones</button>
+      <button onclick="logout()">Cerrar Sesión</button>
+    </div>
+  </div>
+
+  <script>
+    // Verifica si el usuario está logueado
+    if (localStorage.getItem('loggedIn') !== 'true') {
+      window.location.href = 'index.html';
+    }
+
+    function logout() {
+      localStorage.removeItem('loggedIn');
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>
