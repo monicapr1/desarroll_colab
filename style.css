@@ -53,3 +53,40 @@ body {
   }
 
 
+
+    /* Dashboard */
+  
+
+    .dashboard-container {
+      background: white;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+      width: 90%;
+      max-width: 500px;
+      text-align: center;
+    }
+    
+    .dashboard-container h1 {
+      margin-bottom: 2rem;
+      color: #333;
+    }
+    
+    .menu button {
+      width: 100%;
+      margin: 10px 0;
+      padding: 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 10px;
+      background: #667eea;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    
+    .menu button:hover {
+      background: #5a67d8;
+    }
+    
+  
